@@ -975,8 +975,7 @@ module type S = sig
   val merge : t -> t -> sok_digest:Sok_message.Digest.t -> t Or_error.t
 end
 
-let check_transaction_union ?(preeval = true) sok_message source target
-    transaction handler =
+let check_transaction_union sok_message source target transaction handler =
   let sok_digest = Sok_message.digest sok_message in
   let prover_state : Base.Prover_state.t =
     {state1= source; state2= target; transaction; sok_digest}
@@ -987,17 +986,18 @@ let check_transaction_union ?(preeval = true) sok_message source target
       ~supply_increase:(Transaction_union.supply_increase transaction)
   in
   let open Tick in
-  let main = if preeval then Lazy.force Base.reduced_main else Base.main in
   let main =
     handle
-      (Checked.map (main (Field.Var.constant top_hash)) ~f:As_prover.return)
+      (Checked.map
+         (Base.main (Field.Var.constant top_hash))
+         ~f:As_prover.return)
       handler
   in
   Or_error.ok_exn (run_and_check main prover_state) |> ignore
 
-let check_transaction ?preeval ~sok_message ~source ~target (t : Transaction.t)
-    handler =
-  check_transaction_union ?preeval sok_message source target
+let check_transaction ~sok_message ~source ~target (t : Transaction.t) handler
+    =
+  check_transaction_union sok_message source target
     (Transaction_union.of_transaction t)
     handler
 
