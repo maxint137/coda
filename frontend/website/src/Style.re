@@ -42,7 +42,7 @@ module Colors = {
 module Typeface = {
   open Css;
   let weights = [
-    // The weights are inentionally shifted thinner one unit
+    // The weights are intentionally shifted thinner one unit
     (`thin, "Thin"),
     (`extraLight, "Thin"),
     (`light, "ExtraLight"),
@@ -61,7 +61,6 @@ module Typeface = {
         fontFace(
           ~fontFamily="IBM Plex Sans",
           ~src=[
-            localUrl("IBMPlexSans-" ++ name),
             url("/static/font/IBMPlexSans-" ++ name ++ "-Latin1.woff2"),
             url("/static/font/IBMPlexSans-" ++ name ++ "-Latin1.woff"),
           ],
@@ -76,12 +75,22 @@ module Typeface = {
     fontFace(
       ~fontFamily="IBM Plex Mono",
       ~src=[
-        localUrl("IBMPlexMono-Regular"),
+        url("/static/font/IBMPlexMono-Medium-Latin1.woff2"),
+        url("/static/font/IBMPlexMono-Medium-Latin1.woff"),
+      ],
+      ~fontStyle=`normal,
+      ~fontWeight=`semiBold,
+      (),
+    );
+  let _ =
+    fontFace(
+      ~fontFamily="IBM Plex Mono",
+      ~src=[
         url("/static/font/IBMPlexMono-SemiBold-Latin1.woff2"),
         url("/static/font/IBMPlexMono-SemiBold-Latin1.woff"),
       ],
       ~fontStyle=`normal,
-      ~fontWeight=`num(600),
+      ~fontWeight=`bold,
       (),
     );
 
@@ -90,7 +99,6 @@ module Typeface = {
       fontFace(
         ~fontFamily="IBM Plex Serif",
         ~src=[
-          localUrl("IBM Plex Serif Medium"),
           url("/static/font/IBMPlexSerif-Medium-Latin1.woff2"),
           url("/static/font/IBMPlexSerif-Medium-Latin1.woff"),
         ],
