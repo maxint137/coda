@@ -6,15 +6,17 @@ module NavStyle = {
 
   module MediaQuery = {
     let menu = "(min-width: 62rem)";
-    let menuMax = "(max-width: 62rem)";
-    let statusLift = "(min-width: 38rem)";
+    let menuMax = "(max-width: 61.9375rem)";
+    let statusLift = mainPage =>
+      mainPage ? "(min-width: 38rem)" : "(min-width: 0rem)";
   };
-  let bottomNudge = Css.marginBottom(`rem(2.25));
+  let bottomNudge = Css.marginBottom(`rem(2.0));
+  let bottomNudgeOffset = offset => Css.marginBottom(`rem(2.0 -. offset));
 
   let collapsedMenuItems =
     style([
       marginTop(`zero),
-      bottomNudge,
+      marginBottom(`zero),
       display(`none),
       // when it's not hidden, make the dropdown appear
       position(`absolute),
@@ -103,21 +105,23 @@ module DropdownMenu = {
           className=Css.(
             merge([
               Style.Link.basic,
-              style([
-                NavStyle.bottomNudge,
-                marginLeft(`rem(1.0)),
-                border(`zero, `solid, `transparent),
-                cursor(`pointer),
-                display(`flex),
-                justifyContent(`flexEnd),
-                position(`relative),
-                userSelect(`none),
-                backgroundColor(`transparent),
-                outline(`zero, `none, `transparent),
-                focus([color(Style.Colors.hyperlinkHover)]),
-                // The menu is always shown on full-size
-                media(NavStyle.MediaQuery.menu, [display(`none)]),
-              ]),
+              style(
+                Style.paddingY(`rem(0.5))
+                @ [
+                  marginLeft(`rem(1.0)),
+                  border(`zero, `solid, `transparent),
+                  cursor(`pointer),
+                  display(`flex),
+                  justifyContent(`flexEnd),
+                  position(`relative),
+                  userSelect(`none),
+                  backgroundColor(`transparent),
+                  outline(`zero, `none, `transparent),
+                  focus([color(Style.Colors.hyperlinkHover)]),
+                  // The menu is always shown on full-size
+                  media(NavStyle.MediaQuery.menu, [display(`none)]),
+                ],
+              ),
             ])
           )
           id="nav-menu-btn">
@@ -156,20 +160,21 @@ module DropdownMenu = {
 };
 
 let component = ReasonReact.statelessComponent("Nav");
-let make = children => {
+let make = (~mainPage, children) => {
   ...component,
   render: _self => {
     let items =
       children
-      |> Array.map(elem =>
+      |> Array.mapi((idx, elem) =>
            <li
-             className=Css.(
-               style(
-                 Style.paddingX(`rem(0.75))
-                 @ Style.paddingY(`rem(0.5))
-                 @ [listStyle(`none, `inside, `none)],
+             className={Css.style(
+               Style.paddingX(`rem(0.75))
+               @ (
+                 idx != Array.length(children) - 1
+                   ? Style.paddingY(`rem(0.5)) : []
                )
-             )>
+               @ [Css.listStyle(`none, `inside, `none)],
+             )}>
              elem
            </li>
          );
@@ -182,7 +187,7 @@ let make = children => {
           alignItems(`flexEnd),
           flexWrap(`wrap),
           media(
-            NavStyle.MediaQuery.statusLift,
+            NavStyle.MediaQuery.statusLift(mainPage),
             [flexWrap(`nowrap), alignItems(`center)],
           ),
         ])
@@ -191,16 +196,23 @@ let make = children => {
         href="/"
         className=Css.(
           style([
-            display(`block),
+            display(`flex),
             NavStyle.bottomNudge,
             width(`percent(50.0)),
+            marginTop(`zero),
             media(
-              NavStyle.MediaQuery.statusLift,
-              [width(`auto), marginRight(`rem(0.75))],
+              NavStyle.MediaQuery.statusLift(mainPage),
+              [
+                width(`auto),
+                marginRight(`rem(0.75)),
+                marginTop(`zero),
+                NavStyle.bottomNudgeOffset(0.1875),
+              ],
             ),
+            media(NavStyle.MediaQuery.menu, [marginTop(`zero)]),
           ])
         )>
-        <Image className="" name="/static/img/coda-logo" />
+        <Image className="" name="/static/img/coda-logo" alt="Coda Home" />
       </a>
       <div
         className=Css.(
@@ -208,12 +220,12 @@ let make = children => {
             order(3),
             width(`percent(100.0)),
             NavStyle.bottomNudge,
-            marginLeft(`rem(-0.125)), // nudge left for optical alignment
             media(
-              NavStyle.MediaQuery.statusLift,
+              NavStyle.MediaQuery.statusLift(mainPage),
               [order(2), width(`auto), marginLeft(`zero)],
             ),
             media(NavStyle.MediaQuery.menu, [width(`percent(40.0))]),
+            ...mainPage ? [] : [display(`none)],
           ])
         )>
         <div
@@ -221,7 +233,7 @@ let make = children => {
             style([
               width(`rem(21.25)),
               media(
-                NavStyle.MediaQuery.statusLift,
+                NavStyle.MediaQuery.statusLift(mainPage),
                 [width(`rem(21.25)), margin(`auto)],
               ),
             ])
@@ -235,11 +247,15 @@ let make = children => {
             position(`relative),
             width(`auto),
             order(2),
+            NavStyle.bottomNudgeOffset(0.5),
             media(
-              NavStyle.MediaQuery.statusLift,
-              [order(3), width(`auto)],
+              NavStyle.MediaQuery.statusLift(mainPage),
+              [order(3), width(`auto), NavStyle.bottomNudge],
             ),
-            media(NavStyle.MediaQuery.menu, [width(`percent(50.0))]),
+            media(
+              NavStyle.MediaQuery.menu,
+              [mainPage ? width(`percent(50.0)) : width(`percent(70.0))],
+            ),
           ])
         )>
         <DropdownMenu> ...items </DropdownMenu>
